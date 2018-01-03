@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<head>
+    <title>表格展示</title>
+    <!--第一步：引入Javascript / CSS （CDN）-->
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" type="text/css" href="http://cdn.datatables.net/1.10.15/css/jquery.dataTables.css">
+
+    <!-- jQuery -->
+    <script type="text/javascript" charset="utf8" src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+
+    <!-- DataTables -->
+    <script type="text/javascript" charset="utf8" src="http://cdn.datatables.net/1.10.15/js/jquery.dataTables.js"></script>
+
+
+    <!--或者下载到本地，下面有下载地址-->
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" type="text/css" href="DataTables-1.10.15/media/css/jquery.dataTables.css">
+
+    <!-- jQuery -->
+    <script type="text/javascript" charset="utf8" src="DataTables-1.10.15/media/js/jquery.js"></script>
+
+    <!-- DataTables -->
+    <script type="text/javascript" charset="utf8" src="DataTables-1.10.15/media/js/jquery.dataTables.js"></script>
+
+
+</head>
+<body ng-controller="mycontroller">
+<table id="example" class="display" width="100%" cellspacing="0">
+    <thead>
+    <tr>
+        <th>用户ID</th>
+        <th>用户名</th>
+        <th>年龄</th>
+        <th>住址</th>
+    </tr>
+    </thead>
+    <tfoot>
+    <tr>
+        <th>用户ID</th>
+        <th>用户名</th>
+        <th>年龄</th>
+        <th>住址</th>
+    </tr>
+    </tfoot>
+</table>
+<script>
+    $(document).ready(function() {
+
+        var table = $('#example').DataTable({
+            // language:"sakjas",  //提示信息
+            autoWidth: false,  //禁用自动调整列宽
+            stripeClasses: ["odd", "even"],  //为奇偶行加上样式，兼容不支持CSS伪类的场合
+            processing: true,  //隐藏加载提示,自行处理
+            serverSide: true,  //启用服务器端分页
+            searching: false,  //禁用原生搜索
+            orderMulti: false,  //启用多列排序
+            order: [],  //取消默认排序查询,否则复选框一列会出现小箭头
+            renderer: "bootstrap",  //渲染样式：Bootstrap和jquery-ui
+            pagingType: "simple_numbers",  //分页样式：simple,simple_numbers,full,full_numbers
+            columnDefs: [{
+                "targets": 'nosort',  //列的样式名
+                "orderable": false    //包含上样式名‘nosort’的禁止排序
+            }],
+            language: {
+                "lengthMenu": "每页 _MENU_ 条记录",
+                "zeroRecords": " ",
+                "info": "当前 _START_ 条到 _END_ 条 共 _TOTAL_ 条",
+                "infoEmpty": "无记录",
+                "infoFiltered": "(从 _MAX_ 条记录过滤)",
+                "paginate": {
+                    "first": "首页",
+                    "previous": "上一页",
+                    "next": "下一页",
+                    "last": "尾页"
+                }
+            },
+            ajax: function (data, callback, settings) {
+
+                //封装请求参数
+                var param = {};
+                param.pageSize= data.length;//页面显示记录条数，在页面显示每页显示多少项的时候
+                param.startIndex = data.start;//开始的记录序号
+                param.pageIndex = (data.start / data.length);//当前页码
+
+                //ajax请求数据方法
+                $.ajax({
+                    type: "POST",
+                    url: "http://localhost:8082/getPersonsByCondition",//url请求的地址
+                    cache: false,  //禁用缓存
+                    data: param,  //传入组装的参数
+                    dataType: "json",
+                    success: function (result) {
+
+                        //封装返回数据重要
+                        var returnData = {};
+                        //返回的数据列表
+                        returnData.data = result.data;
+
+                        //调用DataTables提供的callback方法，代表数据已封装完成并传回DataTables进行渲染
+                        //此时的数据需确保正确无误，异常判断应在执行此回调前自行处理完毕
+                        callback(returnData);
+                    }
+                });
+            },
+     /*       columns: [
+                { data: id,title:'用户ID'},
+                { data: name,title:'用户名' },
+                { data: age,title:'年龄'},
+                { data: address,title:'住址'}
+            ]*/
+            //列表表头字段
+            columns: [
+                { data: "id","title":"用户ID"},
+                { data: "name","title":"用户名" },
+                { data: "age","title":"年龄"},
+                { data: "address","title":"住址"},
+                //新建列的 定义
+       /*         {
+                    className : "td-operation text-center",
+                    data: null,
+                    defaultContent:"",
+                    orderable : false,
+                    width : "160px"
+                }*/
+            ]
+
+
+
+        });
+
+        });
+    /*     $(document).ready(function() {
+
+         var table = $('#example').DataTable( {
+
+              ajax:{
+                  url: 'http://localhost:8081/database/getAllStudent',
+                  dataSrc: 'data'
+              },
+              columns: [
+                  { data: 'id',title:'用户id'},
+                  { data: 'stuName',title:'用户名'},
+                  { data: 'stuAge',title:'年龄'}
+              ],
+              searching: false,//屏蔽datatales的查询框
+              pagingType: "full_numbers",
+              // serverSide: true,
+              language: {
+                  "lengthMenu": "每页 _MENU_ 条记录",
+                  "zeroRecords": " ",
+                  "info": "当前 _START_ 条到 _END_ 条 共 _TOTAL_ 条",
+                  "infoEmpty": "无记录",
+                  "infoFiltered": "(从 _MAX_ 条记录过滤)",
+                  "paginate": {
+                      "first": "首页",
+                      "previous": "上一页",
+                      "next": "下一页",
+                      "last": "尾页"
+                  }
+              }
+          } );
+      } );*/
+
+</script>
+</body>
